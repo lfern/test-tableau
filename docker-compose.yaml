@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  playwright:
+    build: .
+    container_name: playwright_python
+    environment:
+      - DISPLAY=:99  # Solo necesario para modo no headless
+    volumes:
+      - .:/app  # Monta el directorio actual en /app dentro del contenedor
+    working_dir: /app
+    command: ./start.sh
+    # command: xvfb-run python download.py
+    #command: bash -c "rm -rf /tmp/.X99-lock && Xvfb :99 -screen 0 1920x1080x24 & python download.py"  # Cambia esto por el script que quieras ejecutar
+    user: pwuser  # Ejecutar como usuario no root
+    security_opt:
+      - seccomp=./seccomp_profile.json  # Usar el perfil de seccomp
+    network_mode: host  # Necesario para modo no headless en Linux
+    tty: true

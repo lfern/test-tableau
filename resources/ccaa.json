@@ -1,0 +1,168 @@
+[
+  {
+    "codigo": "01",
+    "nombre": "Andalucía",
+    "provincias": [
+      {"codigo": "04", "nombre": "Almería"},
+      {"codigo": "11", "nombre": "Cádiz"},
+      {"codigo": "14", "nombre": "Córdoba"},
+      {"codigo": "18", "nombre": "Granada"},
+      {"codigo": "21", "nombre": "Huelva"},
+      {"codigo": "23", "nombre": "Jaén"},
+      {"codigo": "29", "nombre": "Málaga"},
+      {"codigo": "41", "nombre": "Sevilla", "es_capital":  true}
+    ]
+  },
+  {
+    "codigo": "02",
+    "nombre": "Aragón",
+    "provincias": [
+      {"codigo": "22", "nombre": "Huesca"},
+      {"codigo": "44", "nombre": "Teruel"},
+      {"codigo": "50", "nombre": "Zaragoza", "es_capital":  true}
+    ]
+  },
+  {
+    "codigo": "03",
+    "nombre": "Asturias, Principado de",
+    "provincias": [
+      {"codigo": "33", "nombre": "Asturias", "es_capital":  true}
+    ]
+  },
+  {
+    "codigo": "04",
+    "nombre": "Balears, Illes",
+    "provincias": [
+      {"codigo": "07", "nombre": "Balears, Illes", "es_capital": true}
+    ]
+  },
+  {
+    "codigo": "05",
+    "nombre": "Canarias",
+    "provincias": [
+      {"codigo": "35", "nombre": "Palmas, Las", "es_capital":  true},
+      {"codigo": "38", "nombre": "Santa Cruz de Tenerife"}
+    ]
+  },
+  {
+    "codigo": "06",
+    "nombre": "Cantabria",
+    "provincias": [
+      {"codigo": 39, "nombre": "Cantabria", "es_capital": true}
+    ]
+  },
+  {
+    "codigo": "07",
+    "nombre": "Castilla y León",
+    "provincias": [
+      {"codigo": "05", "nombre": "Ávila"},
+      {"codigo": "09", "nombre": "Burgos"},
+      {"codigo": "24", "nombre": "León"},
+      {"codigo": "34", "nombre": "Palencia"},
+      {"codigo": "37", "nombre": "Salamanca"},
+      {"codigo": "40", "nombre": "Segovia"},
+      {"codigo": "42", "nombre": "Soria"},
+      {"codigo": "47", "nombre": "Valladolid", "es_capital": true},
+      {"codigo": "49", "nombre": "Zamora"}
+    ]
+  },
+  {
+    "codigo": "08",
+    "nombre": "Castilla-La Mancha",
+    "provincias": [
+      {"codigo": "02", "nombre": "Albacete"},
+      {"codigo": "13", "nombre": "Ciudad Real"},
+      {"codigo": "16", "nombre": "Cuenca"},
+      {"codigo": "19", "nombre": "Guadalajara"},
+      {"codigo": "45", "nombre": "Toledo", "es_capital": true}
+    ]
+  },
+  {
+    "codigo": "09",
+    "nombre": "Cataluña",
+    "provincias": [
+      {"codigo": "08", "nombre": "Barcelona", "es_capital": true},
+      {"codigo": "17", "nombre": "Girona"},
+      {"codigo": "25", "nombre": "Lleida"},
+      {"codigo": "43", "nombre": "Tarragona"}
+    ]
+  },
+  {
+    "codigo": "10",
+    "nombre": "Comunitat Valenciana",
+    "provincias": [
+      {"codigo": "03", "nombre": "Alicante/Alacant"},
+      {"codigo": "12", "nombre": "Castellón/Castelló"},
+      {"codigo": "46", "nombre": "Valencia/València", "es_capital": true}
+    ]
+  },
+  {
+    "codigo": "11",
+    "nombre": "Extremadura",
+    "provincias": [
+      {"codigo": "06", "nombre": "Badajoz"},
+      {"codigo": "10", "nombre": "Cáceres", "es_capital": true}
+    ]
+  },
+  {
+    "codigo": "12",
+    "nombre": "Galicia",
+    "provincias": [
+      {"codigo": "15", "nombre": "Coruña, A", "es_capital": true},
+      {"codigo": "27", "nombre": "Lugo"},
+      {"codigo": "32", "nombre": "Ourense"},
+      {"codigo": "36", "nombre": "Pontevedra"}
+    ]
+  },
+  {
+    "codigo": "13",
+    "nombre": "Madrid, Comunidad de",
+    "provincias": [
+      {"codigo": "28", "nombre": "Madrid", "es_capital": true}
+    ]
+  },
+  {
+    "codigo": "14",
+    "nombre": "Murcia, Región de",
+    "provincias": [
+      {"codigo": "30", "nombre": "Murcia", "es_capital":  true}
+    ]
+  },
+  {
+    "codigo": "15",
+    "nombre": "Navarra, Comunidad Foral de",
+    "provincias": [
+      {"codigo": "31", "nombre": "Navarra", "es_capital": true}
+    ]
+  },
+  {
+    "codigo": "16",
+    "nombre": "País Vasco",
+    "provincias": [
+      {"codigo": "01", "nombre": "Araba/Álava", "es_capital": true},
+      {"codigo": "48", "nombre": "Bizkaia"},
+      {"codigo": "20", "nombre": "Gipuzkoa"}
+    ]
+  },
+  {
+    "codigo": "17",
+    "nombre": "La Rioja",
+    "provincias": [
+      {"codigo": "26", "nombre": "La Rioja", "es_capital": true}
+    ]
+  },
+  {
+    "codigo": "18",
+    "nombre": "Ceuta",
+    "provincias": [
+      {"codigo": "51", "nombre": "Ceuta", "es_capital":  true}
+    ]
+  },
+  {
+    "codigo": "19",
+    "nombre": "Melilla",
+    "provincias": [
+      {"codigo": "52", "nombre": "Melilla", "es_capital": true}
+    ]
+  }
+]

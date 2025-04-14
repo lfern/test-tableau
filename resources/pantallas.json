@@ -1,0 +1,8 @@
+[
+  {"nombre": "Demografía", "descripcion": "Demografía"},
+  {"nombre": "Medio Físico", "descripcion": "Medio Físico"},
+  {"nombre": "Economía", "descripcion": "Economío"},
+  {"nombre": "Servicios", "descripcion": "Servicios"},
+  {"nombre": "Vivienda", "descripcion": "Vivienda"},
+  {"nombre": "Medioambiente", "descripcion": "Medioambiente"}
+]
