@@ -1,3 +1,4 @@
+import sys
 from typing import List, Type, Optional
 
 from sqlalchemy import create_engine, Enum, DateTime, Column, Integer, String, ForeignKey, Boolean, asc, \
@@ -111,7 +112,7 @@ class PantallaComunidadData(Base):
 
     # Agregar la restricción UNIQUE
     __table_args__ = (
-        UniqueConstraint('id_pantalla', 'id_comunidad', 'nombre', name='uix_pantalla_comunidad_nombre'),
+        UniqueConstraint('id_pantalla', 'id_comunidad', 'municipio', 'nombre', name='uix_pantalla_comunidad_nombre'),
     )
 
 
@@ -217,18 +218,13 @@ def update_or_create_pantalla_comunidad_data(pantalla: Pantalla, comunidad: Comu
         nombre=variable,
     ).first()
     if pantalla_comunidad_data:
-        pantalla_comunidad_data = PantallaComunidadData(
-            id=pantalla_comunidad_data.id,
-            pantalla=pantalla,
-            comunidad=comunidad,
-            municipio=municipio,
-            nombre=variable,
-            valor=value,
-            fecha_descarga=datetime.utcnow(),
-        )
-
-        session.merge(pantalla)
+        print("1")
+        pantalla_comunidad_data.municipio = municipio
+        pantalla_comunidad_data.nombre = variable
+        pantalla_comunidad_data.valor = value
+        pantalla_comunidad_data.fecha_descarga = datetime.utcnow()
     else:
+        print("2")
         pantalla_comunidad_data = PantallaComunidadData(
             pantalla=pantalla,
             comunidad=comunidad,
@@ -239,7 +235,7 @@ def update_or_create_pantalla_comunidad_data(pantalla: Pantalla, comunidad: Comu
         )
 
         session.add(pantalla_comunidad_data)
-
+    sys.stdout.flush()
     return pantalla_comunidad_data
 
 

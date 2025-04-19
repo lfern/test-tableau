@@ -9,10 +9,15 @@ import pandas as pd
 import scrape.scrape
 from db.utils import insert_all_pantallas, insert_all_provincias
 from db import db
-from scrape.exception import ScrapeError
+from scrape.exception import ScrapeError, ScrapeNoWorksheetsAfterLoad
+from playwright._impl._errors import Error as PlaywrightError
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-# pd.set_option('display.max_rows', None)
+pd.set_option('display.max_rows', None)
+
+#pd.set_option('display.max_columns', None)
+#pd.set_option('display.max_colwidth', None)
+#pd.set_option('display.width', 0)
 
 
 def init_tables():
@@ -31,33 +36,45 @@ async def main():
 
     # obtener una pantalla pendiente
     pantalla_comunidad = db.get_pending_pantalla()
-    scraper = scrape.scrape.Scraper()
-    await scraper.start()
+    scraper = None
 
     try:
         while pantalla_comunidad is not None:
             logging.info(
                 f"Scrapeando pantalla: {pantalla_comunidad.pantalla.nombre}, comunidad: {pantalla_comunidad.comunidad.nombre}")
 
-            try:
-                await scraper.scrape(pantalla_comunidad)
+            if scraper is None:
+                scraper = scrape.scrape.Scraper()
+                await scraper.start()
 
-                #db.set_pantalla_provincia_scraped(pantalla_provincia)
-                pantalla_comunidad.set_procesado(db.session)
-                db.session.commit()
-            except ScrapeError as scrape_error:
-                print(f"Scrape error: {scrape_error}")
+            try:
+                try:
+                    await scraper.scrape(pantalla_comunidad)
+                    pantalla_comunidad.set_procesado(db.session)
+                    db.session.commit()
+                except ScrapeNoWorksheetsAfterLoad as scrape_error:
+                    logging.info("Intentando provincia a provincia")
+                    for provincia in pantalla_comunidad.comunidad.provincias:
+
+                        await scraper.scrape(pantalla_comunidad, provincia)
+
+                    pantalla_comunidad.set_procesado(db.session)
+            except (ScrapeError, PlaywrightError) as scrape_error:
+                logging.info(f"Scrape error: {scrape_error}")
                 pantalla_comunidad.set_error(db.session, traceback.format_exc())
                 db.session.commit()
                 await scraper.screenshot(path="pagina_completa.png", full_page=True)
-                #await db.set_pantalla_provincia_error(pantalla_provincia, scrape_error)
+                # await db.set_pantalla_provincia_error(pantalla_provincia, scrape_error)
+                await scraper.finalize()
+                scraper = None
                 raise
 
             time.sleep(5)
-            pantalla_provincia = db.get_pending_pantalla()
+            pantalla_comunidad = db.get_pending_pantalla()
         #
     finally:
-        await scraper.finalize()
+        if scraper is not None:
+            await scraper.finalize()
 
 if __name__ == "__main__":
     logging.basicConfig()

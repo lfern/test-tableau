@@ -12,3 +12,9 @@ class ScrapeTimeoutError(ScrapeError):
     def __init__(self, message: str):
         super().__init__(message)
 
+
+class ScrapeNoWorksheetsAfterLoad(ScrapeError):
+    """No worksheets after load Exception in scraper"""
+    def __init__(self, message: str):
+        super().__init__(message)
+
