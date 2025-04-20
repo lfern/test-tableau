@@ -579,8 +579,7 @@ class Scraper:
         variable_processed = False
         for t in workbook.worksheets:
             if t.name == screen.get_sheet_name(self.modo_provincia):
-                print(t.getColumns())
-                # self._print_ws_info(t, screen.get_column_names(self.modo_provincia))
+                # self._print_ws_info(t, False, screen.get_column_names(self.modo_provincia))
                 self._save_ws_info(pantalla_comunidad, current_variable, t, screen.get_column_names(self.modo_provincia))
                 variable_processed = True
             # else:
@@ -590,21 +589,22 @@ class Scraper:
             raise ScrapeError(f'No se ha podido procesar la variable {current_variable}')
 
     @classmethod
-    def _print_ws_info(cls, ws: TableauWorksheet, attrs: Optional[ColumnNames] = None):
+    def _print_ws_info(cls, ws: TableauWorksheet, print_data: bool = False, attrs: Optional[ColumnNames] = None):
         print(f"worksheet name : {ws.name}")  # show worksheet name
         # print(ws.data) #show dataframe for this worksheet
         print(ws.getColumns())
 
-        if attrs:
-            print(ws.data[[
-                attrs.get("label"),
-                attrs.get('municipio'),
-                attrs.get('municipio2')
-            ]])
-        else:
-            print(ws.data)
+        if print_data:
+            if attrs:
+                print(ws.data[[
+                    attrs.get("label"),
+                    attrs.get('municipio'),
+                    attrs.get('municipio2')
+                ]])
+            else:
+                print(ws.data)
 
-        sys.stdout.flush()
+            sys.stdout.flush()
 
     @classmethod
     def _save_ws_info(

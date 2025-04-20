@@ -67,7 +67,6 @@ async def main():
                 # await db.set_pantalla_provincia_error(pantalla_provincia, scrape_error)
                 await scraper.finalize()
                 scraper = None
-                raise
 
             time.sleep(5)
             pantalla_comunidad = db.get_pending_pantalla()
