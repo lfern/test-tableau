@@ -218,13 +218,11 @@ def update_or_create_pantalla_comunidad_data(pantalla: Pantalla, comunidad: Comu
         nombre=variable,
     ).first()
     if pantalla_comunidad_data:
-        print("1")
         pantalla_comunidad_data.municipio = municipio
         pantalla_comunidad_data.nombre = variable
         pantalla_comunidad_data.valor = value
         pantalla_comunidad_data.fecha_descarga = datetime.utcnow()
     else:
-        print("2")
         pantalla_comunidad_data = PantallaComunidadData(
             pantalla=pantalla,
             comunidad=comunidad,
