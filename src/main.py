@@ -9,7 +9,7 @@ import pandas as pd
 import scrape.scrape
 from db.utils import insert_all_pantallas, insert_all_provincias
 from db import db
-from scrape.exception import ScrapeError, ScrapeNoWorksheetsAfterLoad
+from scrape.exception import ScrapeError, ScrapeNoWorksheetsAfterLoad, ScrapeNoVariableProcessed
 from playwright._impl._errors import Error as PlaywrightError
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -59,15 +59,19 @@ async def main():
                         await scraper.scrape(pantalla_comunidad, provincia)
 
                     pantalla_comunidad.set_procesado(db.session)
+                    db.session.commit()
+            except (ScrapeNoVariableProcessed, ScrapeNoWorksheetsAfterLoad) as scrape_error:
+                logging.error(f"Scrape error: {scrape_error}")
+                raise
             except (ScrapeError, PlaywrightError) as scrape_error:
-                logging.info(f"Scrape error: {scrape_error}")
+                logging.error(f"Scrape error: {scrape_error}")
                 pantalla_comunidad.set_error(db.session, traceback.format_exc())
                 db.session.commit()
                 await scraper.screenshot(path="pagina_completa.png", full_page=True)
                 # await db.set_pantalla_provincia_error(pantalla_provincia, scrape_error)
                 await scraper.finalize()
                 scraper = None
-
+            # break
             time.sleep(5)
             pantalla_comunidad = db.get_pending_pantalla()
         #
