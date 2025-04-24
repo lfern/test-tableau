@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Optional, TypedDict
 from playwright.async_api import async_playwright, Page, Browser, BrowserContext, FrameLocator, Locator
 from tableauscraper import dashboard, TableauWorksheet
-from scrape.exception import ScrapeTimeoutError, ScrapeError, ScrapeNoWorksheetsAfterLoad
+from scrape.exception import ScrapeTimeoutError, ScrapeError, ScrapeNoWorksheetsAfterLoad, ScrapeNoVariableProcessed
 from tableau.tableau_utils import TableauScraper2
 from db import db
 from utils.text_utils import fix_mojibake
@@ -43,7 +43,7 @@ class ScrapeScreen(enum.Enum):
     VIVIENDA = "Vivienda"
     MEDIOAMBIENTE = "Medioambiente"
 
-    def to_scrape_tab(self, provincia: bool = False) -> "ScrapeTab":
+    def to_scrape_tab(self, provincia: bool) -> "ScrapeTab":
         if provincia:
             if ScrapeScreen.DEMOGRAFIA == self:
                 return ScrapeTab.B1_DEMOGRAFICO_PROVINCIAL
@@ -76,28 +76,28 @@ class ScrapeScreen(enum.Enum):
             if ScrapeScreen.DEMOGRAFIA == self:
                 return "B1_deciles_op2.1"
             elif ScrapeScreen.MEDIOFISICO == self:
-                return "B2_deciles_op2.1"
+                return "B2_mapa_todas_variables"
             elif ScrapeScreen.ECONOMIA == self:
-                return "B3_deciles_op2.1"
+                return "B3_mapa_todas_var"
             elif ScrapeScreen.SERVICIOS == self:
-                return "B4_deciles_op2.1"
+                return "B4_deciles_map_prov_op3"
             elif ScrapeScreen.VIVIENDA == self:
-                return "B5_deciles_op2.1"
+                return "B5_mapa_todas_variables"
             else:  # ScrapeScreen.MEDIOAMBIENTE == self:
-                return "B6_deciles_op2.1"
+                return "B6_mapa_todas_variables"
         else:
             if ScrapeScreen.DEMOGRAFIA == self:
                 return "B1_mapa_ccaa_todas_variables"
             elif ScrapeScreen.MEDIOFISICO == self:
                 return "B2_mapa_ccaa_todas_variables"
             elif ScrapeScreen.ECONOMIA == self:
-                return "B3_mapa_ccaa_todas_variables"
+                return "B3_mapa_ccaa_todas_var"
             elif ScrapeScreen.SERVICIOS == self:
-                return "B4_mapa_ccaa_todas_variables"
+                return "B4_percentiles_map_ccaa_op3"
             elif ScrapeScreen.VIVIENDA == self:
-                return "B5_mapa_ccaa_todas_variables"
+                return "B5_var1_CCAA"
             else:  # ScrapeScreen.MEDIOAMBIENTE == self:
-                return "B6_mapa_ccaa_todas_variables"
+                return "B6_var_CCAA"
 
     def get_column_names(self, provincia: bool) -> ColumnNames:
         if provincia:
@@ -112,33 +112,33 @@ class ScrapeScreen(enum.Enum):
                 }
             elif ScrapeScreen.MEDIOFISICO == self:
                 return {
-                    "label": "MIN(cp_B2_label_sheet_municpio_provincia)-alias",
+                    "label": "MÍN.(cp_B2_label_sheets_maps)-alias",
                     "municipio": "cc_Municpio_name_after_set-alias",
-                    "municipio2": "ATTR(cc_label_provincia_muncipio_map_ccaa)-alias",
+                    "municipio2": "cc_Municpio_name_after_set-alias-alias",
                 }
             elif ScrapeScreen.ECONOMIA == self:
                 return {
-                    "label": "MIN(cp_B3_label_sheet_municpio_provincia)-alias",
+                    "label": "MÍN.(cp_B3_label__sheets_maps CORREGIR)-alias",
                     "municipio": "cc_Municpio_name_after_set-alias",
-                    "municipio2": "ATTR(cc_label_provincia_muncipio_map_ccaa)-alias",
+                    "municipio2": "cc_Municpio_name_after_set-alias",
                 }
             elif ScrapeScreen.SERVICIOS == self:
                 return {
-                    "label": "MIN(cp_B4_label_sheet_municpio_provincia)-alias",
+                    "label": "MÍN.(cp_B4_label__sheets_maps)-alias",
                     "municipio": "cc_Municpio_name_after_set-alias",
-                    "municipio2": "ATTR(cc_label_provincia_muncipio_map_ccaa)-alias",
+                    "municipio2": "cc_Municpio_name_after_set-alias",
                 }
             elif ScrapeScreen.VIVIENDA == self:
                 return {
-                    "label": "MIN(cp_B5_label_sheet_municpio_provincia)-alias",
+                    "label": "MÍN.(cp_B5_label__sheets_maps)-alias",
                     "municipio": "cc_Municpio_name_after_set-alias",
-                    "municipio2": "ATTR(cc_label_provincia_muncipio_map_ccaa)-alias",
+                    "municipio2": "cc_Municpio_name_after_set-alias",
                 }
             else:  # ScrapeScreen.MEDIOAMBIENTE == self:
                 return {
-                    "label": "MIN(cp_B6_label_sheet_municpio_provincia)-alias",
+                    "label": "MÍN.(cp_B6_label_sheet_maps)-alias",
                     "municipio": "cc_Municpio_name_after_set-alias",
-                    "municipio2": "ATTR(cc_label_provincia_muncipio_map_ccaa)-alias",
+                    "municipio2": "cc_Municpio_name_after_set-alias",
                 }
         else:
             if ScrapeScreen.DEMOGRAFIA == self:
@@ -173,7 +173,7 @@ class ScrapeScreen(enum.Enum):
                 }
             else:  # ScrapeScreen.MEDIOAMBIENTE == self:
                 return {
-                    "label": "MIN(cp_B6_label_sheet_municpio_provincia)-alias",
+                    "label": "MIN(cp_B6_label_sheet_maps)-alias",
                     "municipio": "cc_Municpio_name_after_set-alias",
                     "municipio2": "ATTR(cc_label_provincia_muncipio_map_ccaa)-alias",
                 }
@@ -382,7 +382,10 @@ class Scraper:
 
                 pages_found.append(scrape_response)
                 if self.current_ccaa and self.current_screen:
-                    filename = self.cache_path / f'{self.current_ccaa}-{self.current_screen}-{response["tipo"]}.json'
+                    if self.modo_provincia:
+                        filename = self.cache_path / f'{self.current_ccaa}-{self.current_provincia}-{self.current_screen}-{response["tipo"]}.json'
+                    else:
+                        filename = self.cache_path / f'{self.current_ccaa}-{self.current_screen}-{response["tipo"]}.json'
                     with open(filename, "w", encoding="utf-8") as file:
                         file.write(response["responseText"])
                         self.logger.info(f'Archivo {filename} escrito correctamente.')
@@ -439,7 +442,7 @@ class Scraper:
         self.last_responses_found = []
 
     async def _move_to_screen(self, screen: ScrapeScreen):
-        scrape_tab = screen.to_scrape_tab()
+        scrape_tab = screen.to_scrape_tab(self.modo_provincia)
         iframe = self._get_iframe_locator()
         selector = iframe.locator(
             f'div#tabs div[wairole="presentation"]:not([aria-selected="true"]) >'
@@ -481,6 +484,10 @@ class Scraper:
         iframe = self._get_iframe_locator()
         selector = iframe.locator(
             'div.tabComboBoxMenu[role=menu][aria-label^="Inicia la navegación seleccionando una variable de este Bloque"]'
+            ' div.tabMenuContent div.tabMenuItem span.tabMenuItemName,'
+            'div.tabComboBoxMenu[role=menu][aria-label^="Inicia la navegación seleccionando una variable del Bloque de este Bloque"]'
+            ' div.tabMenuContent div.tabMenuItem span.tabMenuItemName,'
+            'div.tabComboBoxMenu[role=menu][aria-label^="Inicia la navegación seleccionando una variable del este Bloque"]'
             ' div.tabMenuContent div.tabMenuItem span.tabMenuItemName'
         )
         await selector.first.wait_for(timeout=5000)
@@ -517,7 +524,9 @@ class Scraper:
     async def _select_variable_node(self) -> Locator:
         iframe = self._get_iframe_locator()
         selector = iframe.locator(
-            'div.ParameterControl h3[title^="Inicia la navegación seleccionando una variable de este Bloque"]'
+            'div.ParameterControl h3[title^="Inicia la navegación seleccionando una variable de este Bloque"],'
+            'div.ParameterControl h3[title^="Inicia la navegación seleccionando una variable del Bloque de este Bloque"],'
+            'div.ParameterControl h3[title^="Inicia la navegación seleccionando una variable del este Bloque"]'
         )
 
         await selector.first.wait_for(timeout=5000)
@@ -562,31 +571,46 @@ class Scraper:
             raise ScrapeError(f'No responses got for tableau')
 
         self.logger.info(f"Loading {self.last_responses_found[0]['tipo']} into tableau TS")
-        ts.loads2(self.last_responses_found[0]['response'])
+        initial_responses = [response for response in self.last_responses_found
+            if response['tipo'] == ScrapeResponse.INITIAL]
+        if len(initial_responses) == 0:
+            raise ScrapeError(f"No se ha recibido ninguna response del tipo {ScrapeResponse.INITIAL}")
+
+        ts.loads2(initial_responses[0]['response'])
         workbook = ts.getWorkbook()
         # print(ts.parameters)
-        for response in self.last_responses_found[1:]:
+        not_initial_responses = [response for response in self.last_responses_found
+            if response['tipo'] != ScrapeResponse.INITIAL]
+        for response in not_initial_responses:
             self.logger.info(f"Loading {response['tipo']} into tableau TS")
             r = json.loads(response['response'])
             print(response['tipo'])
             workbook.updateFullData(r)
             new_workbook = dashboard.getWorksheetsCmdResponse(ts, r)
-            if len(new_workbook.worksheets) == 0:
-                raise ScrapeNoWorksheetsAfterLoad(f'No se han encontrado worksheets')
+            if len(new_workbook.worksheets) > 0 or response['tipo'] != ScrapeResponse.FIRST_RENDER:
+                workbook = new_workbook
 
-            workbook = new_workbook
+        if len(workbook.worksheets) == 0:
+            raise ScrapeNoWorksheetsAfterLoad(f'No se han encontrado worksheets')
 
         variable_processed = False
         for t in workbook.worksheets:
             if t.name == screen.get_sheet_name(self.modo_provincia):
-                # self._print_ws_info(t, False, screen.get_column_names(self.modo_provincia))
+                if len(t.getColumns()) == 0:
+                    raise ScrapeNoWorksheetsAfterLoad(f'El worksheet configurado no tiene campos')
+
+                self._print_ws_info(t, False, screen.get_column_names(self.modo_provincia))
                 self._save_ws_info(pantalla_comunidad, current_variable, t, screen.get_column_names(self.modo_provincia))
                 variable_processed = True
             # else:
             #    self._save_ws_info(t, True)
 
         if not variable_processed:
-            raise ScrapeError(f'No se ha podido procesar la variable {current_variable}')
+            for t in workbook.worksheets:
+                self.logger.info(f"--->{t.name}")
+                if t.name == screen.get_sheet_name(self.modo_provincia):
+                    self._print_ws_info(t, False)
+            raise ScrapeNoVariableProcessed(f'No se ha podido procesar la variable {current_variable}')
 
     @classmethod
     def _print_ws_info(cls, ws: TableauWorksheet, print_data: bool = False, attrs: Optional[ColumnNames] = None):
@@ -642,6 +666,7 @@ class Scraper:
     async def _switch_to_provincia(self):
         self._reset_all_responses()
         self.current_ccaa = "País Vasco"
+        self.current_provincia = "Araba"
         self.current_screen = ScrapeScreen.DEMOGRAFIA.value
         self.modo_provincia = True
         self.logger.info("Go to tableau main page provincia .")
