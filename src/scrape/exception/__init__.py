@@ -18,3 +18,10 @@ class ScrapeNoWorksheetsAfterLoad(ScrapeError):
     def __init__(self, message: str):
         super().__init__(message)
 
+
+class ScrapeNoVariableProcessed(ScrapeError):
+    """No variable processed after load Exception in scraper"""
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
